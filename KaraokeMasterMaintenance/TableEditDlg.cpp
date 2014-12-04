@@ -1,6 +1,14 @@
 // TableEditDlg.cpp : 実装ファイル
 //
 
+/**
+* @file  TableEditDlg.cpp
+* @brief テーブル編集画面クラス 
+*
+* @author Togyo Tsukasa
+* @date 2014-11-30
+*/
+
 #include "stdafx.h"
 #include "KaraokeMasterMaintenance.h"
 #include "TableEditDlg.h"
@@ -122,7 +130,7 @@ BOOL CTableEditDlg::PreTranslateMessage(MSG* pMsg)
 
 //-----------------------------------------------
 //
-// @brief ダイアログ消滅直後
+// @brief ダイアログ消滅直前
 //
 //-----------------------------------------------
 void CTableEditDlg::PostNcDestroy()

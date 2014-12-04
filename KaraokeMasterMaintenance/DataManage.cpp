@@ -1,12 +1,25 @@
+/**
+* @file  DataManage.cpp
+* @brief カラオケデータ管理クラス
+*
+* @author Togyo Tsukasa
+* @date 2014-11-29
+*/
 #include "stdafx.h"
 #include "DataManage.h"
 
-#define SQL_GET_CATEGORY	"select * from Category;"
-#define SQL_GET_USER		"select * from User;"
-#define SQL_GET_GENRE		"select * from Genre;"
-#define SQL_GET_SONG_FILE	"select * from SongFile;"
+//-----------------------------------------------
+//
+// SQL⇒UTF-8に変換して渡してやる必要がある
+//
+//-----------------------------------------------
+#define SQL_GET_CATEGORY	"select * from Category;"	//!< 全カテゴリマスタ取得
+#define SQL_GET_USER		"select * from User;"		//!< 全ユーザマスタ取得
+#define SQL_GET_GENRE		"select * from Genre;"		//!< 全ジャンルマスタ取得
+#define SQL_GET_SONG_FILE	"select * from SongFile;"	//!< 全曲データデーブル取得
+#define SQL_GET_MUSIC_LOGS	"select * from MusicLog;"	//!< 全既歌テーブル取得
 
-#define MAX_STR_LEN 256
+#define MAX_STR_LEN 256	//!< 文字バッファサイズ
 
 //-----------------------------------------------
 //
@@ -57,30 +70,34 @@ const char* CDataManage::getDLLVersion(void)
 //
 // @retval SQLITE_OK：成功
 // @retval ERR_DB_OPEND：DBをオープン済み
+// @retval ERR_CANNOT_OPEN_DB：DBが開けない
+// @retval ERR_NOT_KARAOKE_DB：カラオケ用DBじゃない
 //
 //-----------------------------------------------
 int CDataManage::openDB(TCHAR *pcFileName)
 {
-	int iRet;
 	if (m_pDB)
 	{
 		return ERR_DB_OPEND;
 	}
-#ifdef _UNICODE
-	CStringA strWork;
-	strWork = pcFileName;
-	char* pcWork = strWork.GetBuffer(strWork.GetLength() + 1);
-#else
-	char* pcWork = pcFileName;
-#endif//_UNICODE
-	iRet = sqlite3_open(pcWork, &m_pDB);
-#ifdef _UNICODE
-	strWork.ReleaseBuffer();
-#endif//_UNICODE
-	char** ppcCategory = NULL;
-	int iCnt, iCol;
-	iRet = getCategory(ppcCategory, iCnt, iCol);
-//	closeDB();
+
+	int iRet = sqlite3_open(convUTF16toUTF8(pcFileName), &m_pDB);
+
+	if (iRet == SQLITE_OK)
+	{
+		char** ppcCategory = NULL;
+		int iCnt, iCol;
+		iRet = getCategory(ppcCategory, iCnt, iCol);
+		if (iRet != SQLITE_OK)
+		{
+			iRet = ERR_NOT_KARAOKE_DB;
+		}
+	}
+	else
+	{
+		iRet = ERR_CANNOT_OPEN_DB;
+	}
+
 	return iRet;
 }
 

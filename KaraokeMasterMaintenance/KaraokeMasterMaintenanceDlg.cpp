@@ -2,6 +2,14 @@
 // KaraokeMasterMaintenanceDlg.cpp : 実装ファイル
 //
 
+/**
+* @file  KaraokeMasterMaintenanceDlg.cpp
+* @brief カラオケマスターメンテメイン画面クラス
+*
+* @author Togyo Tsukasa
+* @date 2014-11-30
+*/
+
 #include "stdafx.h"
 #include "KaraokeMasterMaintenance.h"
 #include "KaraokeMasterMaintenanceDlg.h"

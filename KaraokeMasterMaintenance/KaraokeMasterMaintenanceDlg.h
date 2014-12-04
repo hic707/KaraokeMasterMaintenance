@@ -2,6 +2,14 @@
 // KaraokeMasterMaintenanceDlg.h : ヘッダー ファイル
 //
 
+/**
+* @file  KaraokeMasterMaintenance.h
+* @brief カラオケマスターメンテメイン画面クラス ヘッダー
+*
+* @author Togyo Tsukasa
+* @date 2014-11-30
+*/
+
 #pragma once
 #include "afxwin.h"
 #include "DataManage.h"
@@ -49,18 +57,18 @@ public:
 	afx_msg void OnBnClickedBtnSong();
 
 private:
-	CEdit m_oEdtDB;
-	CButton m_oBtnCategory;
-	CButton m_oBtnUser;
-	CButton m_oBtnGenre;
-	CButton m_oBtnSong;
+	CEdit m_oEdtDB;			//!< DBファイルエディット
+	CButton m_oBtnCategory;	//!< カテゴリマスターボタン
+	CButton m_oBtnUser;		//!< ユーザーマスターボタン
+	CButton m_oBtnGenre;	//!< ジャンルマスターボタン
+	CButton m_oBtnSong;		//!< ソングマスターボタン
 
-	CDataManage m_oDataManage;
+	CDataManage m_oDataManage;	//!< データ管理
 
-	CTableEditDlg* m_pCategoryDlg;
-	CTableEditDlg* m_pUserDlg;
-	CTableEditDlg* m_pGenreDlg;
-	CTableEditDlg* m_pSongDlg;
+	CTableEditDlg* m_pCategoryDlg;	//!< カテゴリマスター用画面ポインタ
+	CTableEditDlg* m_pUserDlg;		//!< ユーザーマスター用画面ポインタ
+	CTableEditDlg* m_pGenreDlg;		//!< ジャンルマスター用画面ポインタ
+	CTableEditDlg* m_pSongDlg;		//!< ソングマスター用画面ポインタ
 
-	CString m_oProductName;
+	CString m_oProductName;	//!< 製品名（毛色が変わるがデータ管理に入れた方が良いか・・・取り回し的に）
 };

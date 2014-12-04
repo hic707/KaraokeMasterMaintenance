@@ -2,6 +2,14 @@
 // KaraokeMasterMaintenance.h : PROJECT_NAME アプリケーションのメイン ヘッダー ファイルです。
 //
 
+/**
+* @file  KaraokeMasterMaintenance.h
+* @brief カラオケマスターメンテツール アプリケーションのメイン ヘッダー
+*
+* @author Togyo Tsukasa
+* @date 2014-11-30
+*/
+
 #pragma once
 
 #ifndef __AFXWIN_H__
@@ -10,25 +18,42 @@
 
 #include "resource.h"		// メイン シンボル
 
+//-----------------------------------------------
+//
+// @brief	各マスターの固有番号：イベントや、関数ポインタ配列の添え字にも使用
+//
+//-----------------------------------------------
 enum
 {
-	EN_CATEGORY = 1,
-	EN_USER,
-	EN_GENRE,
-	EN_SONG,
+	EN_CATEGORY = 1,	//!< カテゴリマスタ
+	EN_USER,			//!< ユーザマスタ
+	EN_GENRE,			//!< ジャンルマスタ
+	EN_SONG,			//!< 曲データデーブル
+	EN_MUSIC_LOG,		//!< 既歌テーブル
 };
 
 
-#define WM_EDIT_END_CATEGORY	( WM_USER + EN_CATEGORY )
-#define WM_EDIT_END_USER		( WM_USER + EN_USER )
-#define WM_EDIT_END_GENRE		( WM_USER + EN_GENRE )
-#define WM_EDIT_END_SONG		( WM_USER + EN_SONG )
+//-----------------------------------------------
+//
+// ウィンドウメッセージ番号
+//
+//-----------------------------------------------
+#define WM_EDIT_END_CATEGORY	( WM_USER + EN_CATEGORY )	//!< カテゴリマスタ更新終了
+#define WM_EDIT_END_USER		( WM_USER + EN_USER )		//!< ユーザマスタ更新終了
+#define WM_EDIT_END_GENRE		( WM_USER + EN_GENRE )		//!< ジャンルマスタ更新終了
+#define WM_EDIT_END_SONG		( WM_USER + EN_SONG )		//!< 曲データデーブル更新終了
+#define WM_EDIT_END_MUSIC_LOG	( WM_USER + EN_MUSIC_LOG )	//!< 既歌テーブル更新終了
 
 
 // CKaraokeMasterMaintenanceApp:
 // このクラスの実装については、KaraokeMasterMaintenance.cpp を参照してください。
 //
 
+//-----------------------------------------------
+//
+// @brief	カラオケマスターメンテツールのメインクラス
+//
+//-----------------------------------------------
 class CKaraokeMasterMaintenanceApp : public CWinApp
 {
 public:

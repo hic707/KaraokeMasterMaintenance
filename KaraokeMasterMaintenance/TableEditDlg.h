@@ -1,3 +1,10 @@
+/**
+* @file  TableEditDlg.h
+* @brief テーブル編集画面クラス ヘッダー
+*
+* @author Togyo Tsukasa
+* @date 2014-11-30
+*/
 #pragma once
 #include "afxcmn.h"
 #include "DataManage.h"

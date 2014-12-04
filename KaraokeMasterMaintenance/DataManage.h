@@ -1,21 +1,33 @@
+/**
+* @file  DataManage.h
+* @brief カラオケデータ管理クラスのヘッダー
+*
+* @author Togyo Tsukasa
+* @date 2014-11-29
+*/
 #pragma once
 
 //#include "TableData.h"
 #include "../../include/sqlite3.h"
 
-#define ERR_DB_OPEND		-1
-#define ERR_CANNOT_OPEN_DB	-2
-#define ERR_MEMORY_FAIL		-3
+#define ERR_DB_OPEND		-1	//!< DBをオープン済み
+#define ERR_CANNOT_OPEN_DB	-2	//!< DBが開けない
+#define ERR_NOT_KARAOKE_DB	-3	//!< カラオケ用DBじゃない
+#define ERR_MEMORY_FAIL		-4	//!< メモリ確保失敗
 
-//! データ管理クラス
+//-----------------------------------------------
+//
+// @brief	データ管理クラス
+//
+//-----------------------------------------------
 class CDataManage
 {
-	sqlite3*	m_pDB;
+	sqlite3*	m_pDB;		//!< DB
 
-	char**	m_ppcCategory;
-	char**	m_ppcUser;
-	char**	m_ppcGenre;
-	char**	m_ppcSongFile;
+	char**	m_ppcCategory;	//!< カテゴリマスタ
+	char**	m_ppcUser;		//!< ユーザマスタ
+	char**	m_ppcGenre;		//!< ジャンルマスタ
+	char**	m_ppcSongFile;	//!< 曲データデーブル
 
 public:
 	CDataManage(void);
