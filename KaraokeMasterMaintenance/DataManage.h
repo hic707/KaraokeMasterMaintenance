@@ -31,22 +31,22 @@ class CDataManage
 
 public:
 	CDataManage(void);
-	~CDataManage();
+	virtual ~CDataManage();
 
-	int openDB(TCHAR *pcFileName);
-	int closeDB(void);
+	virtual int openDB(TCHAR *pcFileName);
+	virtual int closeDB(void);
 
-	const char* getDLLVersion(void);
+	virtual const char* getDLLVersion(void);
 
-	int getCategory(char**& ppcCategory, int& iRecCnt, int& iColCnt);
-	int getUser(char**& ppcUser, int& iRecCnt, int& iColCnt);
-	int getGenre(char**& ppcGenre, int& iRecCnt, int& iColCnt);
-	int getSongFile(char**& ppcSongFile, int& iRecCnt, int& iColCnt);
+	virtual int getCategory(char**& ppcCategory, int& iRecCnt, int& iColCnt);
+	virtual int getUser(char**& ppcUser, int& iRecCnt, int& iColCnt);
+	virtual int getGenre(char**& ppcGenre, int& iRecCnt, int& iColCnt);
+	virtual int getSongFile(char**& ppcSongFile, int& iRecCnt, int& iColCnt);
 
-	wchar_t* convUTF8toUTF16(const char* pcUTF8);
-	char* convUTF16toUTF8(const wchar_t* pwcUTF16);
+	virtual wchar_t* convUTF8toUTF16(const char* pcUTF8);
+	virtual char* convUTF16toUTF8(const wchar_t* pwcUTF16);
 
-private:
-	int getTable(const char* pcSQL, char**& ppcResult, int& iRow, int& iCol);
-	void freeTables(void);
+protected:
+	virtual int getTable(const char* pcSQL, char**& ppcResult, int& iRow, int& iCol);
+	virtual void freeTables(void);
 };

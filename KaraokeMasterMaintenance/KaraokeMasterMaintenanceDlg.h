@@ -42,10 +42,10 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
-	void setEnableButtons(BOOL bFlg);
-	BOOL checkEditDlg(void);
-	BOOL createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle);
-	void getProductName(void);
+	virtual void setEnableButtons(BOOL bFlg);
+	virtual BOOL checkEditDlg(void);
+	virtual BOOL createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle);
+	virtual void getProductName(void);
 
 public:
 	afx_msg void OnDropFiles(HDROP hDropInfo);
@@ -70,5 +70,10 @@ private:
 	CTableEditDlg* m_pGenreDlg;		//!< ジャンルマスター用画面ポインタ
 	CTableEditDlg* m_pSongDlg;		//!< ソングマスター用画面ポインタ
 
-	CString m_oProductName;	//!< 製品名（毛色が変わるがデータ管理に入れた方が良いか・・・取り回し的に）
+	//XmlTextReader m_oXml;
+
+	CString m_oProductName;		//!< 製品名（毛色が変わるがデータ管理に入れた方が良いか・・・取り回し的に）
+	CString m_oMusicFolder;		//!< 動画が格納されているフォルダー
+	CString m_oBackupFolder;	//!< 動画のバックアップフォルダー
+	CString m_oVlcLibFolder;	//!< VLCライブラリ格納フォルダー
 };

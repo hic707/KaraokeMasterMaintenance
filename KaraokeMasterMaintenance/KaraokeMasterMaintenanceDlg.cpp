@@ -14,6 +14,7 @@
 #include "KaraokeMasterMaintenance.h"
 #include "KaraokeMasterMaintenanceDlg.h"
 #include "afxdialogex.h"
+#include "XmlReader.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -127,6 +128,27 @@ BOOL CKaraokeMasterMaintenanceDlg::OnInitDialog()
 
 	getProductName();
 
+	CXmlReader oXMLReader;
+
+	int iRet = oXMLReader.loadXML(_T("Config.xml"));
+	if (iRet == XML_SUCCESS)
+	{
+		CString oStr;
+		if (oXMLReader.getContents(_T("root/DataBasePath"), oStr) == XML_SUCCESS)
+		{
+			int iRet = m_oDataManage.openDB(oStr.GetBuffer(0));
+			oStr.ReleaseBuffer();
+			if (iRet == SQLITE_OK)
+			{
+				m_oEdtDB.SetWindowText(oStr);
+				setEnableButtons(TRUE);
+			}
+		}
+		oXMLReader.getContents(_T("root/MusicFolder"), m_oMusicFolder);
+		oXMLReader.getContents(_T("root/BackupFolder"), m_oBackupFolder);
+		oXMLReader.getContents(_T("root/LibFolder"), m_oVlcLibFolder);
+	}
+
 	// DLLのバージョン
 	const char* pcVersion = m_oDataManage.getDLLVersion();
 	if (strcmp(pcVersion, SQLITE_VERSION) != 0)
@@ -136,7 +158,8 @@ BOOL CKaraokeMasterMaintenanceDlg::OnInitDialog()
 		oVersion = pcVersion;
 		oStr.Format(_T("sqlite3.dllのバージョンが %s でないので、動かないかも。\nそれでも実行しますかい？\n現在のバージョン：%s"), _T(SQLITE_VERSION), oVersion);
 		int iResult = MessageBox(oStr, m_oProductName, MB_YESNO | MB_ICONQUESTION);
-		if (IDNO == iResult){
+		if (IDNO == iResult)
+		{
 			CDialogEx::OnCancel();
 		}
 	}
