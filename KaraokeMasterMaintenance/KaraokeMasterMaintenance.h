@@ -66,6 +66,9 @@ public:
 // 実装
 
 	DECLARE_MESSAGE_MAP()
+
+private:
+	HANDLE m_hMutexApp;  // 二重起動防止用ミューテックス
 };
 
 extern CKaraokeMasterMaintenanceApp theApp;

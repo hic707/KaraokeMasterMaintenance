@@ -13,11 +13,12 @@
 // SQL⇒UTF-8に変換して渡してやる必要がある
 //
 //-----------------------------------------------
-#define SQL_GET_CATEGORY	"select * from Category;"	//!< 全カテゴリマスタ取得
-#define SQL_GET_USER		"select * from User;"		//!< 全ユーザマスタ取得
-#define SQL_GET_GENRE		"select * from Genre;"		//!< 全ジャンルマスタ取得
-#define SQL_GET_SONG_FILE	"select * from SongFile;"	//!< 全曲データデーブル取得
-#define SQL_GET_MUSIC_LOGS	"select * from MusicLog;"	//!< 全既歌テーブル取得
+#define SQL_GET_CATEGORY		_T("select CategoryCd, CategoryName, GenreCd, Path from Category;")	//!< 全カテゴリマスタ取得
+#define SQL_GET_CATEGORY_NAME	_T("select CategoryCd, CategoryName from Category;")	//!< 全カテゴリマスタ取得
+#define SQL_GET_USER			_T("select * from User;")		//!< 全ユーザマスタ取得
+#define SQL_GET_GENRE			_T("select * from Genre;")		//!< 全ジャンルマスタ取得
+#define SQL_GET_SONG_FILE		_T("select CategoryCd, FileName, SongName, SongKana, Singer, SingerKana, TieUpName, TieUpNameKana, DuoFlg, DuoColor1, DuoColor2, DuoColor3, DuoColor4, DuoColor5, DuoColorAll from SongFile where CategoryCd like %s;")	//!< 曲データデーブル(カテゴリで絞る)取得
+#define SQL_GET_MUSIC_LOGS		_T("select * from MusicLog;")	//!< 全既歌テーブル取得
 
 #define MAX_STR_LEN 256	//!< 文字バッファサイズ
 
@@ -80,6 +81,8 @@ int CDataManage::openDB(TCHAR *pcFileName)
 	{
 		return ERR_DB_OPEND;
 	}
+
+	// ファイルの有無をチェキすべし（なければ、ERR_CANNOT_OPEN_DB）
 
 	int iRet = sqlite3_open(convUTF16toUTF8(pcFileName), &m_pDB);
 
@@ -215,7 +218,7 @@ char* CDataManage::convUTF16toUTF8(const wchar_t* pwcUTF16)
 //
 // @brief 指定されたSQLを実行し、結果を取得する
 //
-// @param pcSQL			(i)SQL
+// @param strSQL		(i)SQL
 // @param ppcResult	(o)SQLの実行結果
 // @param iRow			(o)レコード数
 // @param iCol			(o)カラム数
@@ -224,14 +227,14 @@ char* CDataManage::convUTF16toUTF8(const wchar_t* pwcUTF16)
 // @retval ERR_CANNOT_OPEN_DB：DBが開かれていない
 //
 //-----------------------------------------------
-int CDataManage::getTable(const char* pcSQL, char**& ppcResult, int& iRow, int& iCol)
+int CDataManage::getTable(const CString& strSQL, char**& ppcResult, int& iRow, int& iCol)
 {
 	char *pcErr;
 	if (m_pDB == NULL)
 	{
 		return ERR_CANNOT_OPEN_DB;
 	}
-	return sqlite3_get_table(m_pDB, pcSQL, &ppcResult, &iRow, &iCol, &pcErr);
+	return sqlite3_get_table(m_pDB, convUTF16toUTF8(strSQL), &ppcResult, &iRow, &iCol, &pcErr);
 }
 
 //-----------------------------------------------
@@ -273,6 +276,49 @@ int CDataManage::getCategory(char**& ppcCategory, int& iRecCnt, int& iColCnt)
 #endif//_DEBUG
 
 		ppcCategory = m_ppcCategory;
+	}
+	return iRet;
+}
+
+//-----------------------------------------------
+//
+// @brief Table Categoryの内容を全て取得する
+//
+// @param ppcCategory	(o)Categoryの内容
+// @param iRecCnt		(o)レコード数
+// @param iColCnt		(o)カラム数
+//
+// @retval SQLITE_OK：成功
+// @retval ERR_CANNOT_OPEN_DB：DBが開かれていない
+//
+//-----------------------------------------------
+int CDataManage::getCategoryName(char**& ppcCategory, int& iRecCnt, int& iColCnt)
+{
+	m_ppcCategoryName = NULL;
+	if (m_ppcCategoryName)
+	{
+		sqlite3_free_table(m_ppcCategoryName);
+		m_ppcCategoryName = NULL;
+	}
+	int iRet = getTable(SQL_GET_CATEGORY_NAME, m_ppcCategoryName, iRecCnt, iColCnt);
+	if (iRet == SQLITE_OK)
+	{
+		// データを取得するコード
+#ifdef _DEBUG
+		for (int iLop = 0; iLop <= iRecCnt; iLop++)
+		{
+			CString oWrok;
+			for (int jLop = 0; jLop < iColCnt; jLop++)
+			{
+				oWrok += convUTF8toUTF16(m_ppcCategoryName[iLop * iColCnt + jLop]);
+				oWrok += _T("\t");
+			}
+			oWrok += _T("\n");
+			TRACE(oWrok);
+		}
+#endif//_DEBUG
+
+		ppcCategory = m_ppcCategoryName;
 	}
 	return iRet;
 }
@@ -383,22 +429,24 @@ int CDataManage::getSongFile(char**& ppcSongFile, int& iRecCnt, int& iColCnt)
 		sqlite3_free_table(m_ppcSongFile);
 		m_ppcSongFile = NULL;
 	}
-	int iRet = getTable(SQL_GET_SONG_FILE, m_ppcSongFile, iRecCnt, iColCnt);
+	CString oWork;
+	oWork.Format(SQL_GET_SONG_FILE, m_oCategoryCd);
+	int iRet = getTable(oWork, m_ppcSongFile, iRecCnt, iColCnt);
 	if (iRet == SQLITE_OK)
 	{
 		// データを取得するコード
 #ifdef _DEBUG
-		for (int iLop = 0; iLop <= iRecCnt; iLop++)
-		{
-			CString oWrok;
-			for (int jLop = 0; jLop < iColCnt; jLop++)
-			{
-				oWrok += convUTF8toUTF16(m_ppcSongFile[iLop * iColCnt + jLop]);
-				oWrok += _T("\t");
-			}
-			oWrok += _T("\n");
-			TRACE(oWrok);
-		}
+//		for (int iLop = 0; iLop <= iRecCnt; iLop++)
+//		{
+//			CString oWrok;
+//			for (int jLop = 0; jLop < iColCnt; jLop++)
+//			{
+//				oWrok += convUTF8toUTF16(m_ppcSongFile[iLop * iColCnt + jLop]);
+//				oWrok += _T("\t");
+//			}
+//			oWrok += _T("\n");
+//			TRACE(oWrok);
+//		}
 #endif//_DEBUG
 
 		ppcSongFile = m_ppcSongFile;

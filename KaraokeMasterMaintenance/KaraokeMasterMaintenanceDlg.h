@@ -44,7 +44,7 @@ protected:
 
 	virtual void setEnableButtons(BOOL bFlg);
 	virtual BOOL checkEditDlg(void);
-	virtual BOOL createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle);
+	virtual BOOL createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle, TCHAR* pcParam = NULL);
 	virtual void getProductName(void);
 
 public:

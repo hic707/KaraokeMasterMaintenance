@@ -68,7 +68,14 @@ BOOL CKaraokeMasterMaintenanceApp::InitInstance()
 	// 設定が格納されているレジストリ キーを変更します。
 	// TODO: 会社名または組織名などの適切な文字列に
 	// この文字列を変更してください。
-	SetRegistryKey(_T("アプリケーション ウィザードで生成されたローカル アプリケーション"));
+	SetRegistryKey(_T("HIC工房"));
+
+	m_hMutexApp = CreateMutex(NULL, TRUE, _T("カラオケマスターメンテツール"));
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		MessageBox(NULL, _T("すでに起動してますやんw"), _T("カラオケマスターメンテツール"), MB_OK);
+		return FALSE;
+	}
 
 	CKaraokeMasterMaintenanceDlg dlg;
 	m_pMainWnd = &dlg;
@@ -94,6 +101,9 @@ BOOL CKaraokeMasterMaintenanceApp::InitInstance()
 	{
 		delete pShellManager;
 	}
+
+	ReleaseMutex(m_hMutexApp);   // ミューテックスの解放
+	CloseHandle(m_hMutexApp);    // ハンドル閉じる
 
 	// ダイアログは閉じられました。アプリケーションのメッセージ ポンプを開始しないで
 	//  アプリケーションを終了するために FALSE を返してください。

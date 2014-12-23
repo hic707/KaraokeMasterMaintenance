@@ -15,6 +15,7 @@
 #include "KaraokeMasterMaintenanceDlg.h"
 #include "afxdialogex.h"
 #include "XmlReader.h"
+#include "SongSearchCondSet.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -136,6 +137,7 @@ BOOL CKaraokeMasterMaintenanceDlg::OnInitDialog()
 		CString oStr;
 		if (oXMLReader.getContents(_T("root/DataBasePath"), oStr) == XML_SUCCESS)
 		{
+			// カレントディレクトリを取ってきて繋げる
 			int iRet = m_oDataManage.openDB(oStr.GetBuffer(0));
 			oStr.ReleaseBuffer();
 			if (iRet == SQLITE_OK)
@@ -163,6 +165,8 @@ BOOL CKaraokeMasterMaintenanceDlg::OnInitDialog()
 			CDialogEx::OnCancel();
 		}
 	}
+	// データ管理にも製品名を設定しておく
+	m_oDataManage.setProductName(m_oProductName);
 	// ダイアログでドラッグ＆ドロップを受け取れるよう設定
 	DragAcceptFiles(TRUE);
 
@@ -436,12 +440,13 @@ void CKaraokeMasterMaintenanceDlg::getProductName(void)
 // @param poTableEditDlg	(i)ダイアログポインタ
 // @param iMode				(i)開くモード
 // @param pcTitle			(i)ダイアログに表示するタイトル
+// @param pcParam			(i)テーブル編集ダイアログに設定するパラメータ
 //
 // @retval TRUE：成功（開けた）
 // @retval FALSE：失敗（開けなかった）
 //
 //-----------------------------------------------
-BOOL CKaraokeMasterMaintenanceDlg::createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle)
+BOOL CKaraokeMasterMaintenanceDlg::createTableEditDlg(CTableEditDlg*& poTableEditDlg, int iMode, TCHAR* pcTitle, TCHAR* pcParam/* = NULL*/)
 {
 	BOOL bRet = FALSE;
 	if (poTableEditDlg == NULL)
@@ -489,7 +494,7 @@ void CKaraokeMasterMaintenanceDlg::OnBnClickedCancel()
 //-----------------------------------------------
 void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnCategory()
 {
-	BOOL bRet = createTableEditDlg(m_pCategoryDlg, EN_CATEGORY, _T("カテゴリマスター"));
+	BOOL bRet = createTableEditDlg(m_pCategoryDlg, EN_CATEGORY, _T("カテゴリマスタ"));
 	if (bRet)
 	{
 			m_oBtnCategory.EnableWindow(FALSE);
@@ -504,7 +509,7 @@ void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnCategory()
 //-----------------------------------------------
 void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnUser()
 {
-	BOOL bRet = createTableEditDlg(m_pUserDlg, EN_USER, _T("ユーザーマスター"));
+	BOOL bRet = createTableEditDlg(m_pUserDlg, EN_USER, _T("ユーザマスタ"));
 	if (bRet)
 	{
 			m_oBtnUser.EnableWindow(FALSE);
@@ -519,7 +524,7 @@ void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnUser()
 //-----------------------------------------------
 void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnGenre()
 {
-	BOOL bRet = createTableEditDlg(m_pGenreDlg, EN_GENRE, _T("ジャンルマスター"));
+	BOOL bRet = createTableEditDlg(m_pGenreDlg, EN_GENRE, _T("ジャンルマスタ"));
 	if (bRet)
 	{
 			m_oBtnGenre.EnableWindow(FALSE);
@@ -534,9 +539,14 @@ void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnGenre()
 //-----------------------------------------------
 void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnSong()
 {
-	BOOL bRet = createTableEditDlg(m_pSongDlg, EN_SONG, _T("ソングマスター"));
-	if (bRet)
+	CSongSearchCondSet oDlg;
+	oDlg.setDataManage(&m_oDataManage);
+	if (oDlg.DoModal() == IDOK)
 	{
+		BOOL bRet = createTableEditDlg(m_pSongDlg, EN_SONG, _T("曲データテーブル"));
+		if (bRet)
+		{
 			m_oBtnSong.EnableWindow(FALSE);
+		}
 	}
 }

@@ -35,6 +35,7 @@ CTableEditDlg::CTableEditDlg(int iMode, CDataManage& oDataManage, CWnd* pParent 
 	m_hWnd = pParent->GetSafeHwnd();
 	m_ppcDBData = NULL;
 	m_poDataManage = &oDataManage;
+	m_bChanged = FALSE;
 	Create(CTableEditDlg::IDD, pParent);
 }
 
@@ -51,6 +52,9 @@ void CTableEditDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST1, m_oLst);
+	DDX_Control(pDX, IDC_EDIT1, m_oEdt);
+	DDX_Control(pDX, IDOK, m_oBtnUpdate);
+	DDX_Control(pDX, IDC_BUTTON1, m_oRtnRollback);
 }
 
 
@@ -59,6 +63,11 @@ BEGIN_MESSAGE_MAP(CTableEditDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &CTableEditDlg::OnBnClickedOk)
 	ON_WM_SIZE()
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_LIST1, &CTableEditDlg::OnNMCustomdrawList1)
+	ON_NOTIFY(NM_DBLCLK, IDC_LIST1, &CTableEditDlg::OnNMDblclkList1)
+	ON_EN_KILLFOCUS(IDC_EDIT1, &CTableEditDlg::OnEnKillfocusEdit1)
+	ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST1, &CTableEditDlg::OnLvnEndlabeleditList1)
+	ON_BN_CLICKED(IDC_BUTTON1, &CTableEditDlg::OnBnClickedButton1)
+	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 
@@ -71,6 +80,33 @@ BOOL CTableEditDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+	m_oLst.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+	if (loadDB() == FALSE)
+	{
+		OnCancel();
+	}
+	
+	m_oEdt.ShowWindow(SW_HIDE);
+	resize();
+
+	return TRUE;  // return TRUE unless you set the focus to a control
+	// 例外 : OCX プロパティ ページは必ず FALSE を返します。
+}
+
+
+//-----------------------------------------------
+//
+// @brief DBを読み込んで、リストコントロールに表示する
+//
+// @param なし
+//
+// @retval TRUE：成功
+// @retval FALSE：失敗
+//
+//-----------------------------------------------
+BOOL CTableEditDlg::loadDB(void)
+{
 	GetTableFunc Func[] = { &CDataManage::getCategory, &CDataManage::getUser, &CDataManage::getGenre, &CDataManage::getSongFile };
 	int iRow, iCol;
 	char** ppcData;
@@ -79,11 +115,13 @@ BOOL CTableEditDlg::OnInitDialog()
 
 	if (iRet != SQLITE_OK)
 	{
-		MessageBox(_T("テーブル取得に失敗しました。。。"));
-		OnCancel();
+		MessageBox(_T("テーブル取得に失敗しました。。。"), m_poDataManage->getProductName());
+		return FALSE;
 	}
 
-	m_oLst.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+	BeginWaitCursor();
+
+	m_oLst.DeleteAllItems();
 	for (int iLop = 0; iLop < iCol; iLop++)
 	{
 		m_oLst.InsertColumn(iLop, m_poDataManage->convUTF8toUTF16(ppcData[iLop]), LVCFMT_LEFT, 100);
@@ -94,17 +132,31 @@ BOOL CTableEditDlg::OnInitDialog()
 		for (int jLop = 1; jLop < iCol; jLop++)
 		{
 			m_oLst.SetItemText(iLop - 1, jLop, m_poDataManage->convUTF8toUTF16(ppcData[iLop * iCol + jLop]));
-//			m_oLst.SetItem(iLop - 1, jLop, LVIF_TEXT, m_poDataManage->convUTF8toUTF16(ppcData[iLop * iCol + jLop]), 0, 0, 0, 0);
 		}
 	}
-	
+	m_bChanged = FALSE;
+	m_oBtnUpdate.EnableWindow(m_bChanged);
+	m_oRtnRollback.EnableWindow(m_bChanged);
 
-	resize();
+	EndWaitCursor();
 
-	return TRUE;  // return TRUE unless you set the focus to a control
-	// 例外 : OCX プロパティ ページは必ず FALSE を返します。
+	return TRUE;
 }
 
+//-----------------------------------------------
+//
+// @brief パラメータを設定する
+//
+// @param pcParam	(i)パラメータ
+//
+// @return なし
+//
+//-----------------------------------------------
+inline void CTableEditDlg::setParam(const TCHAR* pcParam)
+{
+	ASSERT(pcParam);
+	m_strParam = pcParam;
+}
 
 // CTableEditDlg メッセージ ハンドラー
 
@@ -142,23 +194,32 @@ void CTableEditDlg::PostNcDestroy()
 
 //-----------------------------------------------
 //
-// @brief 「破棄」ボタンを押下した
+// @brief 「画面を閉じる」ボタンを押下した
 //
 //-----------------------------------------------
 void CTableEditDlg::OnBnClickedCancel()
 {
+	if (m_bChanged)
+	{
+		int iResult = MessageBox(_T("DBが変更されてるよ！\n編集した内容を破棄して、画面を閉じていい？"), m_poDataManage->getProductName(), MB_YESNO | MB_ICONQUESTION);
+		if (IDNO == iResult)
+		{
+			return;
+		}
+	}
 	DestroyWindow();
 }
 
 
 //-----------------------------------------------
 //
-// @brief 「更新」ボタンを押下した
+// @brief 「更新を反映」ボタンを押下した
 //
 //-----------------------------------------------
 void CTableEditDlg::OnBnClickedOk()
 {
-	DestroyWindow();
+	//DestroyWindow();
+	MessageBox(_T("DBを更新したよ！（まだ未実装だけど）"), m_poDataManage->getProductName());
 }
 
 
@@ -172,6 +233,21 @@ void CTableEditDlg::OnSize(UINT nType, int cx, int cy)
 	CDialogEx::OnSize(nType, cx, cy);
 
 	resize();
+}
+
+
+//-----------------------------------------------
+//
+// @brief ウィンドウサイズ制限
+//
+//-----------------------------------------------
+void CTableEditDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	// 幅400高さ300より小さくできないようにする
+	lpMMI->ptMinTrackSize.x = 400;
+	lpMMI->ptMinTrackSize.y = 300;
+
+	CDialogEx::OnGetMinMaxInfo(lpMMI);
 }
 
 //-----------------------------------------------
@@ -216,3 +292,102 @@ void CTableEditDlg::OnNMCustomdrawList1(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = 0;
 	}
 }
+
+//-----------------------------------------------
+//
+// @brief リストコントロールのエディットがフォーカスを失った
+//
+//-----------------------------------------------
+void CTableEditDlg::OnLvnEndlabeleditList1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+	CString sEdit = pDispInfo->item.pszText;
+
+	if (!sEdit.IsEmpty())
+	{
+		m_oLst.SetItemText(pDispInfo->item.iItem, pDispInfo->item.iSubItem, sEdit);
+
+		m_bChanged = TRUE;
+		m_oBtnUpdate.EnableWindow(m_bChanged);
+		m_oRtnRollback.EnableWindow(m_bChanged);
+	}
+	
+	m_oLst.SetItemState(pDispInfo->item.iItem, 0, LVNI_FOCUSED | LVNI_SELECTED);
+
+	*pResult = 0;
+}
+
+
+//-----------------------------------------------
+//
+// @brief リストコントロールをダブルクリックしたときの処理
+//
+//-----------------------------------------------
+void CTableEditDlg::OnNMDblclkList1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	*pResult = 0;
+
+	if (pNMItemActivate->iItem < 0 || pNMItemActivate->iSubItem < 1)
+		return;
+
+	CRect ColumnRect;
+
+	m_oLst.GetSubItemRect(pNMItemActivate->iItem, pNMItemActivate->iSubItem, LVIR_BOUNDS, ColumnRect);
+
+	m_oEdt.SetWindowPos(&m_oLst, ColumnRect.left + 12, ColumnRect.top + 42, ColumnRect.right - ColumnRect.left, ColumnRect.bottom - ColumnRect.top, NULL);
+	m_oEdt.ShowWindow(SW_SHOW);
+
+	m_oEdt.SetWindowText(m_oLst.GetItemText(pNMItemActivate->iItem, pNMItemActivate->iSubItem));
+
+	m_iSelectItem = pNMItemActivate->iItem;
+	m_iSelectSubItem = pNMItemActivate->iSubItem;
+
+	m_oEdt.SetFocus();
+}
+
+
+//-----------------------------------------------
+//
+// @brief 編集終了時
+//
+//-----------------------------------------------
+void CTableEditDlg::OnEnKillfocusEdit1()
+{
+	if (m_iSelectItem < 0 || m_iSelectSubItem < 1)
+	{
+		return;
+	}
+
+	CString oStr;
+	m_oEdt.GetWindowText(oStr);
+	if (oStr.Compare(m_oLst.GetItemText(m_iSelectItem, m_iSelectSubItem)) != 0)
+	{
+		m_bChanged = TRUE;
+		m_oBtnUpdate.EnableWindow(m_bChanged);
+		m_oRtnRollback.EnableWindow(m_bChanged);
+	}
+
+	m_oLst.SetItemText(m_iSelectItem, m_iSelectSubItem, oStr);
+	m_oEdt.ShowWindow(SW_HIDE);
+}
+
+
+//-----------------------------------------------
+//
+// @brief 「編集を破棄」ボタン押下
+//
+//-----------------------------------------------
+void CTableEditDlg::OnBnClickedButton1()
+{
+	int iResult = MessageBox(_T("DBが変更されてるよ！\n編集した内容を破棄して、DBを読み直していい？"), m_poDataManage->getProductName(), MB_YESNO | MB_ICONQUESTION);
+	if (IDNO == iResult)
+	{
+		return;
+	}
+	if (loadDB() == FALSE)
+	{
+		OnCancel();
+	}
+}
+

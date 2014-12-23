@@ -8,6 +8,7 @@
 #pragma once
 #include "afxcmn.h"
 #include "DataManage.h"
+#include "afxwin.h"
 
 
 // CTableEditDlg ダイアログ
@@ -20,6 +21,8 @@ public:
 //	CTableEditDlg(CWnd* pParent = NULL);   // 標準コンストラクター
 	CTableEditDlg(int iMode, CDataManage& oDataManage, CWnd* pParent = NULL);   // 標準コンストラクター
 	virtual ~CTableEditDlg();
+
+	void setParam(const TCHAR* pcParam);
 
 // ダイアログ データ
 	enum { IDD = IDD_DLG_TABLE_EDIT };
@@ -36,6 +39,13 @@ protected:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnNMCustomdrawList1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnLvnEndlabeleditList1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMDblclkList1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnEnKillfocusEdit1();
+	afx_msg void OnBnClickedButton1();
+
+	virtual BOOL loadDB(void);
 
 	void resize(void);
 private:
@@ -44,4 +54,12 @@ private:
 	char** m_ppcDBData;
 	CDataManage* m_poDataManage;
 	CListCtrl m_oLst;
+	CEdit m_oEdt;
+	int m_iSelectItem, m_iSelectSubItem;
+	BOOL m_bChanged;
+
+	CButton m_oBtnUpdate;
+	CButton m_oRtnRollback;
+
+	CString m_strParam;
 };
