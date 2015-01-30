@@ -54,12 +54,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\VideoLAN\VLC\sdk\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>../../lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqlite3.lib;version.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../lib;C:\Program Files (x86)\VideoLAN\VLC\sdk\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sqlite3.lib;version.lib;libvlc.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -81,14 +82,15 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\VideoLAN\VLC\sdk\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>../../lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sqlite3.lib;version.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../lib;C:\Program Files (x86)\VideoLAN\VLC\sdk\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sqlite3.lib;version.lib;libvlc.lib</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -108,6 +110,7 @@
     <ClInclude Include="DataManage.h" />
     <ClInclude Include="KaraokeMasterMaintenance.h" />
     <ClInclude Include="KaraokeMasterMaintenanceDlg.h" />
+    <ClInclude Include="mpeg4.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SongSearchCondSet.h" />
     <ClInclude Include="stdafx.h" />
@@ -120,6 +123,7 @@
     <ClCompile Include="DataManage.cpp" />
     <ClCompile Include="KaraokeMasterMaintenance.cpp" />
     <ClCompile Include="KaraokeMasterMaintenanceDlg.cpp" />
+    <ClCompile Include="mpeg4.cpp" />
     <ClCompile Include="SongSearchCondSet.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

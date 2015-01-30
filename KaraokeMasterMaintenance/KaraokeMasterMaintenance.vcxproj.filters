@@ -48,6 +48,9 @@
     <ClInclude Include="SongSearchCondSet.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="mpeg4.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KaraokeMasterMaintenance.cpp">
@@ -69,6 +72,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="SongSearchCondSet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="mpeg4.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

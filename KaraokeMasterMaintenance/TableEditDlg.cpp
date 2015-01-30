@@ -55,6 +55,7 @@ void CTableEditDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT1, m_oEdt);
 	DDX_Control(pDX, IDOK, m_oBtnUpdate);
 	DDX_Control(pDX, IDC_BUTTON1, m_oRtnRollback);
+	DDX_Control(pDX, IDC_EDT_TEST, m_oEdtTest);
 }
 
 
@@ -68,6 +69,7 @@ BEGIN_MESSAGE_MAP(CTableEditDlg, CDialogEx)
 	ON_NOTIFY(LVN_ENDLABELEDIT, IDC_LIST1, &CTableEditDlg::OnLvnEndlabeleditList1)
 	ON_BN_CLICKED(IDC_BUTTON1, &CTableEditDlg::OnBnClickedButton1)
 	ON_WM_GETMINMAXINFO()
+	ON_BN_CLICKED(IDC_BTN_TEST, &CTableEditDlg::OnBnClickedBtnTest)
 END_MESSAGE_MAP()
 
 
@@ -110,16 +112,18 @@ BOOL CTableEditDlg::loadDB(void)
 	GetTableFunc Func[] = { &CDataManage::getCategory, &CDataManage::getUser, &CDataManage::getGenre, &CDataManage::getSongFile };
 	int iRow, iCol;
 	char** ppcData;
+	BOOL bRet = TRUE;
+
+	BeginWaitCursor();
 
 	int iRet = (m_poDataManage->*Func[m_iMode - EN_CATEGORY])(ppcData, iRow, iCol);
 
 	if (iRet != SQLITE_OK)
 	{
 		MessageBox(_T("テーブル取得に失敗しました。。。"), m_poDataManage->getProductName());
-		return FALSE;
+		bRet = FALSE;
+		goto EXIT;
 	}
-
-	BeginWaitCursor();
 
 	m_oLst.DeleteAllItems();
 	for (int iLop = 0; iLop < iCol; iLop++)
@@ -138,9 +142,10 @@ BOOL CTableEditDlg::loadDB(void)
 	m_oBtnUpdate.EnableWindow(m_bChanged);
 	m_oRtnRollback.EnableWindow(m_bChanged);
 
+EXIT:
 	EndWaitCursor();
 
-	return TRUE;
+	return bRet;
 }
 
 //-----------------------------------------------
@@ -391,3 +396,24 @@ void CTableEditDlg::OnBnClickedButton1()
 	}
 }
 
+
+
+//-----------------------------------------------
+//
+// @brief 「カラーテスト」ボタン押下（テストなので消す）
+//
+//-----------------------------------------------
+void CTableEditDlg::OnBnClickedBtnTest()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	COLORREF stColor = RGB(255, 0x40, 0x80);
+	CColorDialog oDlg(stColor);
+
+	if (oDlg.DoModal() == IDOK)
+	{	
+		CString strWork;
+		stColor = oDlg.GetColor();
+		strWork.Format(_T("%06X"), stColor);
+		m_oEdtTest.SetWindowText(strWork);
+	}
+}

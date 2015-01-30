@@ -16,6 +16,10 @@
 #include "afxdialogex.h"
 #include "XmlReader.h"
 #include "SongSearchCondSet.h"
+//#include "mpeg4.h"
+
+//#include "vlc/vlc.h"
+//#include "vlc/libvlc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +69,12 @@ CKaraokeMasterMaintenanceDlg::CKaraokeMasterMaintenanceDlg(CWnd* pParent /*=NULL
 	m_pUserDlg = NULL;
 	m_pGenreDlg = NULL;
 	m_pSongDlg = NULL;
+//	m_libvlc = NULL;
+}
+
+CKaraokeMasterMaintenanceDlg::~CKaraokeMasterMaintenanceDlg()
+{
+//	FreeLibrary(m_libvlc);
 }
 
 void CKaraokeMasterMaintenanceDlg::DoDataExchange(CDataExchange* pDX)
@@ -75,6 +85,7 @@ void CKaraokeMasterMaintenanceDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BTN_USER, m_oBtnUser);
 	DDX_Control(pDX, IDC_BTN_GENRE, m_oBtnGenre);
 	DDX_Control(pDX, IDC_BTN_SONG, m_oBtnSong);
+	DDX_Control(pDX, IDC_BTN_INPORT, m_oBtnImport);
 }
 
 BEGIN_MESSAGE_MAP(CKaraokeMasterMaintenanceDlg, CDialogEx)
@@ -88,6 +99,7 @@ BEGIN_MESSAGE_MAP(CKaraokeMasterMaintenanceDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_USER, &CKaraokeMasterMaintenanceDlg::OnBnClickedBtnUser)
 	ON_BN_CLICKED(IDC_BTN_GENRE, &CKaraokeMasterMaintenanceDlg::OnBnClickedBtnGenre)
 	ON_BN_CLICKED(IDC_BTN_SONG, &CKaraokeMasterMaintenanceDlg::OnBnClickedBtnSong)
+	ON_BN_CLICKED(IDC_BTN_INPORT, &CKaraokeMasterMaintenanceDlg::OnBnClickedBtnInport)
 END_MESSAGE_MAP()
 
 
@@ -150,6 +162,9 @@ BOOL CKaraokeMasterMaintenanceDlg::OnInitDialog()
 		oXMLReader.getContents(_T("root/BackupFolder"), m_oBackupFolder);
 		oXMLReader.getContents(_T("root/LibFolder"), m_oVlcLibFolder);
 	}
+//	m_libvlc = LoadLibrary(m_oMusicFolder + _T("\\libvlc.dll"));
+
+	m_oBtnImport.EnableWindow(!m_oMusicFolder.IsEmpty());
 
 	// DLLのバージョン
 	const char* pcVersion = m_oDataManage.getDLLVersion();
@@ -326,6 +341,7 @@ void CKaraokeMasterMaintenanceDlg::OnDropFiles(HDROP hDropInfo)
 	DragQueryFile(hDropInfo, 0, szFile, sizeof(szFile));
 	if (::PathIsDirectory(szFile)){
 		MessageBox(_T("フォルダーは受け取れませんて"), m_oProductName);
+//		updateSongFile(szFile);
 		goto EXIT;
 	}
 	m_oDataManage.closeDB();
@@ -347,6 +363,99 @@ EXIT:
 	setEnableButtons(bEnable);
 
 	CDialogEx::OnDropFiles(hDropInfo);
+}
+
+//-----------------------------------------------
+//
+// @brief 曲データテーブルを更新する
+//
+// @param pcFolderPath	(i)曲データのトップディレクトリパス
+//
+// @return なし
+//
+//-----------------------------------------------
+void CKaraokeMasterMaintenanceDlg::updateSongFile(const TCHAR* pcFolderPath)
+{
+	if (::PathIsDirectory(pcFolderPath))
+//	if (m_oMusicFolder.Compare(pcFolderPath) == 0)
+	{
+		int iRet = MessageBox(_T("現在のMusicフォルダーのファイルで曲データテーブルを更新するかい？"), m_oProductName, MB_YESNO | MB_ICONQUESTION);
+		if (IDNO == iRet)
+		{
+			return;
+		}
+	} else {
+		MessageBox(_T("ファイルは受け取れませんて"), m_oProductName);
+		return;
+	}
+	BeginWaitCursor();
+
+	if (m_oDataManage.backupDB(m_oBackupFolder) != SQLITE_OK)
+	{
+		MessageBox(_T("DBのバックアップに失敗しました・・・"), m_oProductName);
+		return;
+	}
+
+	CStringArray strArrayFilePath;
+	CStringArray strArrayMp4Path;
+	CString strFolderPath = pcFolderPath;
+	CString strLogFileName = _T("MasterMaintenance_SongFileUpdateLog.txt");
+
+	TravelFolder(strFolderPath, strArrayFilePath);
+
+	int iRet = m_oDataManage.importSongFile(strArrayFilePath, strFolderPath, strLogFileName);
+
+	EndWaitCursor();
+	if (iRet == SQLITE_OK)
+	{
+		MessageBox(_T("曲データテーブルを更新したよ！"), m_oProductName, MB_ICONINFORMATION);
+	}
+	else if (iRet == ERR_NO_REGIST_MUSIC)
+	{
+		CString strWork;
+		strWork.Format(_T("曲データテーブルに追加できなかったファイルがあります。。。\nログファイル（%s）を確認してください。"), strLogFileName);
+		MessageBox(strWork, m_oProductName, MB_ICONWARNING);
+	}
+	else
+	{
+		m_oDataManage.restoreDB(m_oBackupFolder);
+		MessageBox(_T("曲データテーブルの更新に失敗しました・・・"), m_oProductName, MB_ICONERROR);
+	}
+}
+
+//-----------------------------------------------
+//
+// @brief フォルダーの中にあるファイルとサブフォルダーにあるファイルを取得する
+//
+// @param strDir			(i)探すフォルダーパス
+// @param strArrayFilePath	(i)見つけたファイルパス
+//
+// @return なし
+//
+//-----------------------------------------------
+void CKaraokeMasterMaintenanceDlg::TravelFolder(const CString& strDir, CStringArray& strArrayFilePath)
+{
+	CFileFind filefind;
+	CString strWildpath = strDir + _T("\\*.*");	//指定した拡張子のファイル
+	if (filefind.FindFile(strWildpath, 0))	//検索開始
+	{
+		BOOL bRet = TRUE;
+		while (bRet)
+		{
+			bRet = filefind.FindNextFile();	//一番目のファイル
+			if (filefind.IsDots())	continue;	//. 或いは ..の場合、次へ
+			if (!filefind.IsDirectory())	//サブフォルダでなければ、ファイル名を追加
+			{
+				CString strTextOut = strDir + CString(_T("\\")) + filefind.GetFileName();
+				strArrayFilePath.Add(strTextOut);
+			}
+			else{	//サブフォルダの場合は、再帰する
+				CString strTextOut = strDir + CString(_T("\\")) + filefind.GetFileName();
+				TravelFolder(strTextOut, strArrayFilePath);
+			}
+		}
+		filefind.Close();
+	}
 }
 
 //-----------------------------------------------
@@ -549,4 +658,15 @@ void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnSong()
 			m_oBtnSong.EnableWindow(FALSE);
 		}
 	}
+}
+
+
+//-----------------------------------------------
+//
+// @brief 「Musicフォルダー取込」ボタンを押下した
+//
+//-----------------------------------------------
+void CKaraokeMasterMaintenanceDlg::OnBnClickedBtnInport()
+{
+	updateSongFile(m_oMusicFolder);
 }

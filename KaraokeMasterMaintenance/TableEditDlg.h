@@ -62,4 +62,8 @@ private:
 	CButton m_oRtnRollback;
 
 	CString m_strParam;
+public:
+	afx_msg void OnBnClickedBtnTest();
+private:
+	CEdit m_oEdtTest;
 };

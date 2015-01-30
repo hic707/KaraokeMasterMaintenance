@@ -61,7 +61,7 @@ int CXmlReader::loadXML(const CString& strXMLFile)
 //	m_poDoc->validateOnParse = VARIANT_TRUE;
 	VARIANT_BOOL vbHoge;
 	HRESULT hr = m_poDoc->load(CComVariant(strXMLFile), &vbHoge);
-	if (!SUCCEEDED(hr))
+	if (hr != S_OK)
 	{
 		return XML_ERR_LOAD;
 	}
